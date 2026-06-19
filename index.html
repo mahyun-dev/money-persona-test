@@ -109,6 +109,27 @@
       </section>
     </main>
 
+    <!-- 공유 모달 -->
+    <div id="shareModal" class="share-modal-backdrop" hidden aria-modal="true" role="dialog" aria-labelledby="shareModalTitle">
+      <div class="share-modal">
+        <p id="shareModalTitle" class="share-modal-title">📤 결과 공유하기</p>
+        <p class="share-modal-desc">아래 링크를 카카오톡에 붙여넣으세요.<br>친구가 클릭하면 바로 결과 화면이 열립니다.</p>
+
+        <div class="share-url-box">
+          <p id="shareUrlText" class="share-url-text"></p>
+        </div>
+
+        <div class="share-modal-actions">
+          <button id="modalCopyBtn" class="btn btn-primary" type="button">🔗 링크 복사하기</button>
+          <button id="modalNativeShareBtn" class="btn btn-ghost" type="button" hidden>📱 바로 공유하기</button>
+        </div>
+
+        <p class="share-modal-hint">복사한 링크를 카카오톡 채팅창에 붙여넣기(길게 누르기)하면 전송됩니다.</p>
+
+        <button id="shareModalClose" class="share-modal-close" type="button" aria-label="닫기">✕</button>
+      </div>
+    </div>
+
     <script>
       window.KAKAO_JS_KEY = "916c61979457f74fb34c212af27e0f61";
     </script>

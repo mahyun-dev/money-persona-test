@@ -145,6 +145,11 @@ const startBtn = document.getElementById("startBtn");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const shareBtn = document.getElementById("shareBtn");
+const shareModal = document.getElementById("shareModal");
+const shareUrlText = document.getElementById("shareUrlText");
+const modalCopyBtn = document.getElementById("modalCopyBtn");
+const modalNativeShareBtn = document.getElementById("modalNativeShareBtn");
+const shareModalClose = document.getElementById("shareModalClose");
 const restartBtn = document.getElementById("restartBtn");
 
 const qCounter = document.getElementById("qCounter");
@@ -309,79 +314,69 @@ nextBtn.addEventListener("click", function () {
   }, 1650);
 });
 
-shareBtn.addEventListener("click", async function () {
-  if (!state.lastResultId) {
-    shareBtn.textContent = "먼저 결과를 확인해주세요";
-    window.setTimeout(function () {
-      shareBtn.textContent = "결과 공유하기";
-    }, 1400);
-    return;
+function openShareModal() {
+  if (!state.lastResultId) return;
+
+  const shareUrl = getShareUrl(state.lastResultId);
+  shareUrlText.textContent = shareUrl;
+
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  if (isMobile && navigator.share) {
+    modalNativeShareBtn.hidden = false;
+  } else {
+    modalNativeShareBtn.hidden = true;
   }
 
-  const resultType = findResultById(state.lastResultId);
-  const shareUrl = getShareUrl(state.lastResultId);
-  const text =
-    "내 결과: " +
-    resultType.title +
-    " - " +
-    resultType.subtitle +
-    "\n나도 해보기: " +
-    shareUrl;
+  shareModal.hidden = false;
+  document.body.style.overflow = "hidden";
+}
 
+function closeShareModal() {
+  shareModal.hidden = true;
+  document.body.style.overflow = "";
+}
+
+shareBtn.addEventListener("click", function () {
+  openShareModal();
+});
+
+shareModal.addEventListener("click", function (e) {
+  if (e.target === shareModal) closeShareModal();
+});
+
+shareModalClose.addEventListener("click", closeShareModal);
+
+shareUrlText.parentElement.addEventListener("click", function () {
+  modalCopyBtn.click();
+});
+
+modalCopyBtn.addEventListener("click", async function () {
+  const url = shareUrlText.textContent;
   try {
-    initKakaoSdk();
-
-    if (window.Kakao && window.Kakao.isInitialized()) {
-      window.Kakao.Share.sendDefault({
-        objectType: "feed",
-        content: {
-          title: "내 돈 관리 유형 & 보험 성향 테스트",
-          description: "내 결과는 '" + resultType.title + "'. 친구도 1분 테스트 해보기",
-          imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80",
-          link: {
-            mobileWebUrl: shareUrl,
-            webUrl: shareUrl
-          }
-        },
-        buttons: [
-          {
-            title: "결과 보고 테스트 참여하기",
-            link: {
-              mobileWebUrl: shareUrl,
-              webUrl: shareUrl
-            }
-          }
-        ]
-      });
-
-      shareBtn.textContent = "카카오톡 공유창이 열렸어요";
-      window.setTimeout(function () {
-        shareBtn.textContent = "결과 공유하기";
-      }, 1800);
-      return;
-    }
-
-    if (navigator.share) {
-      await navigator.share({
-        title: "내 돈 관리 유형 & 보험 성향 테스트",
-        text: text,
-        url: shareUrl
-      });
-
-      shareBtn.textContent = "공유가 완료되었어요";
-      window.setTimeout(function () {
-        shareBtn.textContent = "결과 공유하기";
-      }, 1800);
-      return;
-    }
-
-    await navigator.clipboard.writeText(text);
-    shareBtn.textContent = "링크 복사 완료! 카톡에 붙여넣어 공유하세요";
+    await navigator.clipboard.writeText(url);
+    modalCopyBtn.textContent = "✅ 복사됐어요! 카톡에 붙여넣기 하세요";
     window.setTimeout(function () {
-      shareBtn.textContent = "결과 공유하기";
-    }, 1800);
-  } catch (error) {
-    shareBtn.textContent = "공유에 실패했어요. 다시 시도해주세요";
+      modalCopyBtn.textContent = "🔗 링크 복사하기";
+    }, 2200);
+  } catch (e) {
+    shareUrlText.focus();
+    document.execCommand("selectAll");
+    modalCopyBtn.textContent = "링크를 직접 선택 후 복사해주세요";
+  }
+});
+
+modalNativeShareBtn.addEventListener("click", async function () {
+  const url = shareUrlText.textContent;
+  const resultType = findResultById(state.lastResultId);
+  try {
+    await navigator.share({
+      title: "내 돈 관리 유형 & 보험 성향 테스트",
+      text: "내 결과는 '" + resultType.title + "' — 친구도 1분 테스트!",
+      url: url
+    });
+    closeShareModal();
+  } catch (e) {
+    /* 취소 또는 실패 시 모달 유지 */
   }
 });
 
