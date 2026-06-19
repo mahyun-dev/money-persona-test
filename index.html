@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>내 돈 관리 유형 & 보험 성향 테스트</title>
+    <meta
+      name="description"
+      content="1분 만에 확인하는 내 돈 관리 유형과 보험 점검 성향. 숨은 보험금 가능성과 불필요한 지출 신호를 점검해보세요."
+    />
+    <meta property="og:title" content="내 돈 관리 유형 & 보험 성향 테스트" />
+    <meta
+      property="og:description"
+      content="MBTI처럼 가볍게, 결과는 날카롭게. 1분 테스트로 내 금융 습관을 확인해보세요."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#103a5e" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&family=Gowun+Batang:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-1" aria-hidden="true"></div>
+    <div class="bg-orb orb-2" aria-hidden="true"></div>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <section id="landing" class="panel panel-active">
+        <p class="eyebrow reveal">1분 심리 테스트</p>
+        <h1 class="hero-title reveal">
+          나도 모르게 새는 돈,<br />
+          <span>내 금융 성향 테스트</span>
+        </h1>
+        <p class="hero-sub reveal">
+          일상 질문 몇 개로 내 소비 습관과 보험 점검 성향을 확인하세요.<br />
+          숨은 보험금 가능성과 불필요한 지출 신호를 쉽게 짚어드립니다.
+        </p>
+
+        <ul class="hero-points reveal" aria-label="테스트 안내">
+          <li>참여 시간 약 1분</li>
+          <li>질문 6개, 바로 결과 확인</li>
+          <li>결과 이미지처럼 공유 가능한 카드 제공</li>
+        </ul>
+
+        <button id="startBtn" class="btn btn-primary reveal" type="button">
+          ⚡ 내 유형 알아보기
+        </button>
+      </section>
+
+      <section id="quiz" class="panel" aria-live="polite">
+        <div class="quiz-top">
+          <div class="progress-meta">
+            <p id="qCounter" class="counter">Q1 / 6</p>
+            <p class="counter-sub">정직하게 고를수록 정확해집니다</p>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="progressBar" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <h2 id="questionText" class="question">질문이 여기에 표시됩니다.</h2>
+
+        <div id="answers" class="answers" role="list"></div>
+
+        <div class="quiz-foot">
+          <button id="prevBtn" class="btn btn-ghost" type="button">이전</button>
+          <button id="nextBtn" class="btn btn-primary" type="button" disabled>다음</button>
+        </div>
+      </section>
+
+      <section id="loading" class="panel panel-loading" aria-live="assertive">
+        <div class="loader-ring" aria-hidden="true"></div>
+        <h2>분석 중입니다</h2>
+        <p>당신의 금융 소비 패턴과 보험 내역 성향을 점검하고 있습니다...</p>
+      </section>
+
+      <section id="result" class="panel">
+        <p class="eyebrow">테스트 결과</p>
+        <h2 id="resultTitle" class="result-title"></h2>
+        <p id="resultSubtitle" class="result-subtitle"></p>
+
+        <div class="result-card">
+          <p class="result-tag">핵심 특징</p>
+          <p id="resultFeature" class="result-feature"></p>
+          <p class="result-tag">한 줄 팩트</p>
+          <p id="resultPunch" class="result-punch"></p>
+          <p class="result-tag">맞춤 제안</p>
+          <p id="resultSolution" class="result-solution"></p>
+        </div>
+
+        <div class="result-actions">
+          <a
+            id="kakaoBtn"
+            class="btn btn-kakao"
+            href="https://open.kakao.com/o/scjkK8zi"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            💬 카카오톡으로 내 맞춤 처방전 받기
+          </a>
+          <button id="shareBtn" class="btn btn-ghost" type="button">결과 문구 복사하기</button>
+          <button id="restartBtn" class="btn btn-link" type="button">다시 테스트하기</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
