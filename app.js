@@ -132,7 +132,8 @@ const resultTypes = [
 
 const state = {
   current: 0,
-  answers: Array(questions.length).fill(null)
+  answers: Array(questions.length).fill(null),
+  lastResultId: null
 };
 
 const landing = document.getElementById("landing");
@@ -156,6 +157,43 @@ const resultSubtitle = document.getElementById("resultSubtitle");
 const resultFeature = document.getElementById("resultFeature");
 const resultPunch = document.getElementById("resultPunch");
 const resultSolution = document.getElementById("resultSolution");
+
+function getShareUrl(resultId) {
+  const baseUrl = window.location.origin === "null"
+    ? window.location.href.split("?")[0]
+    : window.location.origin + window.location.pathname;
+  return baseUrl + "?share=1&type=" + encodeURIComponent(resultId);
+}
+
+function findResultById(resultId) {
+  return resultTypes.find(function (type) {
+    return type.id === resultId;
+  });
+}
+
+function initKakaoSdk() {
+  if (!window.Kakao) return;
+  if (!window.KAKAO_JS_KEY) return;
+
+  if (!window.Kakao.isInitialized()) {
+    window.Kakao.init(window.KAKAO_JS_KEY);
+  }
+}
+
+function openSharedResultIfExists() {
+  const params = new URLSearchParams(window.location.search);
+  const shared = params.get("share");
+  const typeId = params.get("type");
+
+  if (shared !== "1" || !typeId) return;
+
+  const type = findResultById(typeId);
+  if (!type) return;
+
+  renderResult(type);
+  restartBtn.textContent = "나도 테스트하기";
+  showPanel("result");
+}
 
 function showPanel(name) {
   [landing, quiz, loading, result].forEach(function (panel) {
@@ -223,6 +261,7 @@ function calculateResult() {
 }
 
 function renderResult(type) {
+  state.lastResultId = type.id;
   resultTitle.textContent = type.title;
   resultSubtitle.textContent = type.subtitle;
   resultFeature.textContent = type.feature;
@@ -233,6 +272,8 @@ function renderResult(type) {
 function resetQuiz() {
   state.current = 0;
   state.answers = Array(questions.length).fill(null);
+  state.lastResultId = null;
+  restartBtn.textContent = "다시 테스트하기";
   renderQuestion();
   showPanel("landing");
 }
@@ -269,21 +310,78 @@ nextBtn.addEventListener("click", function () {
 });
 
 shareBtn.addEventListener("click", async function () {
+  if (!state.lastResultId) {
+    shareBtn.textContent = "먼저 결과를 확인해주세요";
+    window.setTimeout(function () {
+      shareBtn.textContent = "결과 공유하기";
+    }, 1400);
+    return;
+  }
+
+  const resultType = findResultById(state.lastResultId);
+  const shareUrl = getShareUrl(state.lastResultId);
   const text =
     "내 결과: " +
-    resultTitle.textContent +
+    resultType.title +
     " - " +
-    resultSubtitle.textContent +
-    "\n1분 테스트로 내 보험 점검 성향 확인하기";
+    resultType.subtitle +
+    "\n나도 해보기: " +
+    shareUrl;
 
   try {
+    initKakaoSdk();
+
+    if (window.Kakao && window.Kakao.isInitialized()) {
+      window.Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title: "내 돈 관리 유형 & 보험 성향 테스트",
+          description: "내 결과는 '" + resultType.title + "'. 친구도 1분 테스트 해보기",
+          imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80",
+          link: {
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl
+          }
+        },
+        buttons: [
+          {
+            title: "결과 보고 테스트 참여하기",
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl
+            }
+          }
+        ]
+      });
+
+      shareBtn.textContent = "카카오톡 공유창이 열렸어요";
+      window.setTimeout(function () {
+        shareBtn.textContent = "결과 공유하기";
+      }, 1800);
+      return;
+    }
+
+    if (navigator.share) {
+      await navigator.share({
+        title: "내 돈 관리 유형 & 보험 성향 테스트",
+        text: text,
+        url: shareUrl
+      });
+
+      shareBtn.textContent = "공유가 완료되었어요";
+      window.setTimeout(function () {
+        shareBtn.textContent = "결과 공유하기";
+      }, 1800);
+      return;
+    }
+
     await navigator.clipboard.writeText(text);
-    shareBtn.textContent = "복사 완료! 지인에게 붙여넣기 해보세요";
+    shareBtn.textContent = "링크 복사 완료! 카톡에 붙여넣어 공유하세요";
     window.setTimeout(function () {
-      shareBtn.textContent = "결과 문구 복사하기";
+      shareBtn.textContent = "결과 공유하기";
     }, 1800);
   } catch (error) {
-    shareBtn.textContent = "복사 권한이 없어 수동 복사가 필요해요";
+    shareBtn.textContent = "공유에 실패했어요. 다시 시도해주세요";
   }
 });
 
@@ -292,3 +390,4 @@ restartBtn.addEventListener("click", function () {
 });
 
 showPanel("landing");
+openSharedResultIfExists();
